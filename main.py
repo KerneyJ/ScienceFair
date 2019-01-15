@@ -24,7 +24,9 @@ BATCH_SIZE = 64
 def classify(current, future):
     return future - current
 
+
 def preprocess(df):
+
     for col in df.columns:
         if col != 'Target':
             df[col] = df[col].pct_change()
@@ -113,4 +115,5 @@ model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, de
 
 
 model.fit(x_train, y_train, batch_size=500, epochs=epoch, validation_data=(x_val, y_val))
-print(x_train[0].shape)
+
+
