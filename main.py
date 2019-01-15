@@ -22,10 +22,7 @@ BATCH_SIZE = 64
 
 
 def classify(current, future):
-    if float(future) > float(current):
-        return 1
-    else:
-        return 0
+    return future - current
 
 def preprocess(df):
     for col in df.columns:
