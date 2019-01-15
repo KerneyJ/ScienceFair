@@ -10,7 +10,7 @@ import random
 import time
 
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, LSTM, CuDNNLSTM, BatchNormalization, Activation
+from keras.layers import Dense, Dropout, LSTM, BatchNormalization, Activation
 from keras.callbacks import  TensorBoard, ModelCheckpoint
 from keras.optimizers import Adam
 
@@ -90,7 +90,6 @@ x_train, y_train = preprocess(data)
 x_val, y_val = preprocess(validation)
 
 model = Sequential()
-print(x_train.shape)
 #model.add(LSTM(128, input_shape=(60, 9), return_sequences=True, activation='tanh'))
 #model.add(Dropout(0.2))
 #model.add(BatchNormalization())
@@ -117,4 +116,4 @@ model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, de
 
 
 model.fit(x_train, y_train, batch_size=500, epochs=epoch, validation_data=(x_val, y_val))
-
+print(x_train[0].shape)
