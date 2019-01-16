@@ -72,29 +72,8 @@ x_train, y_train = preprocess(data)
 x_val, y_val = preprocess(validation)
 
 model = Sequential()
-'''
 model.add(LSTM(32, return_sequences=True,
-               input_shape=(SEQUENCE_LENGTH, data_dim), activation='relu'))
-
-model.add(Dropout(0.2))
-model.add(BatchNormalization())
-
-
-model.add(LSTM(32, return_sequences=True, activation='tanh'))
-model.add(Dropout(0.1))
-model.add(BatchNormalization())
-
-model.add(LSTM(32, return_sequences=True, activation='tanh'))
-model.add(Dropout(0.2))
-model.add(BatchNormalization())
-
-model.add(Dense(32, activation='relu'))
-model.add(Dropout(0.2))
-
-model.add((Dense(3, activation='softmax')))
-'''
-model.add(LSTM(32, return_sequences=True,
-              input_shape=(sequence_length, data_dim), activation='relu'))  # returns a sequence of vectors of dimension 32
+              input_shape=(sequence_length, data_dim), activation='relu')) # returns a sequence of vectors of dimension 32
 model.add(Dropout(0.2))
 model.add(BatchNormalization())
 
@@ -111,6 +90,6 @@ model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, de
 
 print(model.input_shape)
 print(x_train.shape)
-model.fit(x_train, y_train, batch_size=32, epochs=epoch, validation_data=(x_val, y_val))
+model.fit(x_train, y_train, batch_size=500, epochs=epoch, validation_data=(x_val, y_val))
 
 
