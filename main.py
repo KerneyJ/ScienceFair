@@ -27,15 +27,11 @@ def classify(current, future):
         return 0
     elif -10 <= diff < -5:
         return 1
-    elif diff < -10:
-        return 2
 
     elif 0 < diff <= 5:
-        return 3
+        return 2
     elif 5 < diff <= 10:
-        return 4
-    elif 10 < diff:
-        return 5
+        return 3
 
 
 
@@ -73,12 +69,12 @@ def preprocess(df):
 
 data = pd.read_csv('D:\\Data\\bitstampUSD_1-min_data_2012-01-01_to_2018-11-11.csv', engine='python')  # get data
 data = data[data.Weighted_Price >= 0]  # remove nan
-data = data[(data.index >= 3003136)]
+data = data[(data.index >= 3403136)]
 data['Future'] = data['Weighted_Price'].shift(-predict_length)
 data['Target'] = list(map(classify, data['Close'], data['Future']))
 data.index = range(len(data))  # re-index the dataframe
 
-last_five = data.index.values[-int(0.05*len(data))]  # get a time index for the last 5 percent of data
+last_five = data.index.values[-int(0.1*len(data))]  # get a time index for the last 5 percent of data
 validation = data[(data.index >= last_five)]  # create validation as last 5 percent of data
 data = data[(data.index <= last_five)]  # remove validation from the normal dataframe
 
@@ -88,18 +84,18 @@ x_val, y_val = preprocess(validation)
 model = Sequential()
 model.add(LSTM(32, return_sequences=True,
               input_shape=(sequence_length, data_dim), activation='relu')) # returns a sequence of vectors of dimension 32
-model.add(Dropout(0.2))
+#model.add(Dropout(0.2))
 model.add(BatchNormalization())
 
 model.add(LSTM(32, return_sequences=True, activation='relu'))  # returns a sequence of vectors of dimension 32
-model.add(Dropout(.2))
+#model.add(Dropout(.2))
 model.add(BatchNormalization())
 
 model.add(LSTM(32, activation='tanh'))  # return a single vector of dimension 32
-model.add(Dropout(0.2))
+#model.add(Dropout(0.2))
 model.add(BatchNormalization())
 
-model.add(Dense(6, activation='relu'))
+model.add(Dense(4, activation='relu'))
 model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, decay=1e-6), metrics=['accuracy'])
 
 print(model.input_shape)
