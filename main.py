@@ -14,20 +14,33 @@ from keras.layers import Dense, Dropout, LSTM, BatchNormalization, Activation
 from keras.callbacks import  TensorBoard, ModelCheckpoint
 from keras.optimizers import Adam
 
-SEQUENCE_LENGTH = 60
+sequence_length = 60
 data_dim = 9
-PREDICT_LENGTH = 3
-epoch = 1
-BATCH_SIZE = 64
+predict_length = 3
+epoch = 10
+batch_size = 64
 
 
 def classify(current, future):
-    if float(future) > float(current):
-        return 1
-    else:
+    diff = float(future) - float(current)
+    if -5 <= diff < 0:
         return 0
+    elif -10 <= diff < -5:
+        return 1
+    elif diff < -10:
+        return 2
+
+    elif 0 < diff <= 5:
+        return 3
+    elif 5 < diff <= 10:
+        return 4
+    elif 10 < diff:
+        return 5
+
+
 
 def preprocess(df):
+
     for col in df.columns:
         if col != 'Target':
             df[col] = df[col].pct_change()
@@ -35,50 +48,33 @@ def preprocess(df):
             df[col] = preprocessing.scale(df[col].values)
 
     df.dropna(inplace=True)
+    # print(df['Weighted_Price'].shape)
 
     seq_data = []
-    prev_days = deque(maxlen=SEQUENCE_LENGTH)
+    prev_days = deque(maxlen=sequence_length)
     for i in df.values:
         prev_days.append([n for n in i[:-1]])
-        if len(prev_days) == SEQUENCE_LENGTH:
+        if len(prev_days) == sequence_length:
             seq_data.append([np.array(prev_days), i[-1]])
 
     random.shuffle(seq_data)
 
-    # Balance data
-    buy = []
-    sell = []
-
-    for seq, target in seq_data:
-        if target == 0:
-            sell.append([seq, target])
-        elif target == 1:
-            buy.append([seq, target])
-
-    random.shuffle(sell)
-    random.shuffle(buy)
-
-    low = min(len(sell), len(buy))
-
-    buy = buy[:low]
-    sell = sell[:low]
-    seq_data = buy+sell
-    random.shuffle(seq_data)
-
     x = []
     y = []
+    # print(len(seq_data))
 
     for seq, target in seq_data:
         x.append(seq)
-        y.append(target)
+        y.append(abs(target))
 
+    # print(len(x), len(y))
     return np.array(x), y
 
 
 data = pd.read_csv('D:\\Data\\bitstampUSD_1-min_data_2012-01-01_to_2018-11-11.csv', engine='python')  # get data
 data = data[data.Weighted_Price >= 0]  # remove nan
-data = data[(data.index >= 3203136)]
-data['Future'] = data['Weighted_Price'].shift(-PREDICT_LENGTH)
+data = data[(data.index >= 3003136)]
+data['Future'] = data['Weighted_Price'].shift(-predict_length)
 data['Target'] = list(map(classify, data['Close'], data['Future']))
 data.index = range(len(data))  # re-index the dataframe
 
@@ -90,30 +86,22 @@ x_train, y_train = preprocess(data)
 x_val, y_val = preprocess(validation)
 
 model = Sequential()
-#model.add(LSTM(128, input_shape=(60, 9), return_sequences=True, activation='tanh'))
-#model.add(Dropout(0.2))
-#model.add(BatchNormalization())
-
-#model.add(LSTM(128, input_shape=(x_train.shape[1:]), return_sequences=True, activation='tanh'))
-#model.add(Dropout(0.1))
-#model.add(BatchNormalization())
-
-#model.add(LSTM(128, input_shape=(x_train.shape[1:]), return_sequences=True, activation='tanh'))
-#model.add(Dropout(0.2))
-#model.add(BatchNormalization())
-
-#model.add(Dense(32, activation='relu'))
-#model.add(Dropout(0.2))
-
-#model.add((Dense(2, activation='softmax')))
-
 model.add(LSTM(32, return_sequences=True,
-               input_shape=(SEQUENCE_LENGTH, data_dim)))  # returns a sequence of vectors of dimension 32
-model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
-model.add(LSTM(32))  # return a single vector of dimension 32
-model.add(Dense(3, activation='sigmoid'))
+              input_shape=(sequence_length, data_dim), activation='relu')) # returns a sequence of vectors of dimension 32
+model.add(Dropout(0.2))
+model.add(BatchNormalization())
+
+model.add(LSTM(32, return_sequences=True, activation='relu'))  # returns a sequence of vectors of dimension 32
+model.add(Dropout(.2))
+model.add(BatchNormalization())
+
+model.add(LSTM(32, activation='tanh'))  # return a single vector of dimension 32
+model.add(Dropout(0.2))
+model.add(BatchNormalization())
+
+model.add(Dense(6, activation='relu'))
 model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, decay=1e-6), metrics=['accuracy'])
 
-
+print(model.input_shape)
+print(x_train.shape)
 model.fit(x_train, y_train, batch_size=500, epochs=epoch, validation_data=(x_val, y_val))
-print(x_train[0].shape)
