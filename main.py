@@ -7,10 +7,9 @@ from collections import deque
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-import time
 
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, LSTM, BatchNormalization, Activation
+from keras.layers import Dense, Dropout, LSTM, BatchNormalization
 from keras.callbacks import  TensorBoard, ModelCheckpoint
 from keras.optimizers import Adam
 
@@ -32,7 +31,6 @@ def classify(current, future):
         return 2
     elif 5 < diff <= 10:
         return 3
-
 
 
 def preprocess(df):
@@ -69,7 +67,7 @@ def preprocess(df):
 
 data = pd.read_csv('D:\\Data\\bitstampUSD_1-min_data_2012-01-01_to_2018-11-11.csv', engine='python')  # get data
 data = data[data.Weighted_Price >= 0]  # remove nan
-data = data[(data.index >= 3403136)]
+data = data[(data.index >= 3303136)]
 data['Future'] = data['Weighted_Price'].shift(-predict_length)
 data['Target'] = list(map(classify, data['Close'], data['Future']))
 data.index = range(len(data))  # re-index the dataframe
@@ -84,16 +82,13 @@ x_val, y_val = preprocess(validation)
 model = Sequential()
 model.add(LSTM(32, return_sequences=True,
               input_shape=(sequence_length, data_dim), activation='relu')) # returns a sequence of vectors of dimension 32
-#model.add(Dropout(0.2))
-model.add(BatchNormalization())
+model.add(Dropout(0.5))
 
 model.add(LSTM(32, return_sequences=True, activation='relu'))  # returns a sequence of vectors of dimension 32
-#model.add(Dropout(.2))
-model.add(BatchNormalization())
+model.add(Dropout(0.5))
 
 model.add(LSTM(32, activation='tanh'))  # return a single vector of dimension 32
-#model.add(Dropout(0.2))
-model.add(BatchNormalization())
+model.add(Dropout(0.5))
 
 model.add(Dense(4, activation='relu'))
 model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, decay=1e-6), metrics=['accuracy'])
