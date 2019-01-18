@@ -14,11 +14,11 @@ from keras.layers import Dense, Dropout, LSTM, BatchNormalization, Activation
 from keras.callbacks import  TensorBoard, ModelCheckpoint
 from keras.optimizers import Adam
 
-SEQUENCE_LENGTH = 60
+sequence_length = 60
 data_dim = 9
-PREDICT_LENGTH = 3
-epoch = 1
-BATCH_SIZE = 64
+predict_length = 3
+epoch = 5
+batch_size = 500
 
 
 def classify(current, future):
@@ -37,10 +37,10 @@ def preprocess(df):
     df.dropna(inplace=True)
 
     seq_data = []
-    prev_days = deque(maxlen=SEQUENCE_LENGTH)
+    prev_days = deque(maxlen=sequence_length)
     for i in df.values:
         prev_days.append([n for n in i[:-1]])
-        if len(prev_days) == SEQUENCE_LENGTH:
+        if len(prev_days) == sequence_length:
             seq_data.append([np.array(prev_days), i[-1]])
 
     random.shuffle(seq_data)
@@ -77,8 +77,8 @@ def preprocess(df):
 
 data = pd.read_csv('D:\\Data\\bitstampUSD_1-min_data_2012-01-01_to_2018-11-11.csv', engine='python')  # get data
 data = data[data.Weighted_Price >= 0]  # remove nan
-data = data[(data.index >= 3203136)]
-data['Future'] = data['Weighted_Price'].shift(-PREDICT_LENGTH)
+data = data[(data.index >= 3403136)]
+data['Future'] = data['Weighted_Price'].shift(-predict_length)
 data['Target'] = list(map(classify, data['Close'], data['Future']))
 data.index = range(len(data))  # re-index the dataframe
 
@@ -90,30 +90,27 @@ x_train, y_train = preprocess(data)
 x_val, y_val = preprocess(validation)
 
 model = Sequential()
-#model.add(LSTM(128, input_shape=(60, 9), return_sequences=True, activation='tanh'))
-#model.add(Dropout(0.2))
-#model.add(BatchNormalization())
+''''
+model.add(LSTM(32, return_sequences=True,
+              input_shape=(sequence_length, data_dim), activation='tanh')) # returns a sequence of vectors of dimension 32
+model.add(Dropout(0.4))
 
-#model.add(LSTM(128, input_shape=(x_train.shape[1:]), return_sequences=True, activation='tanh'))
-#model.add(Dropout(0.1))
-#model.add(BatchNormalization())
+model.add(LSTM(32, return_sequences=True, activation='tanh'))  # returns a sequence of vectors of dimension 32
+model.add(Dropout(0.2))
 
-#model.add(LSTM(128, input_shape=(x_train.shape[1:]), return_sequences=True, activation='tanh'))
-#model.add(Dropout(0.2))
-#model.add(BatchNormalization())
+model.add(LSTM(32, activation='relu'))  # return a single vector of dimension 32
 
-#model.add(Dense(32, activation='relu'))
-#model.add(Dropout(0.2))
-
-#model.add((Dense(2, activation='softmax')))
+model.add(Dense(1, activation='relu'))
+model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, decay=1e-6), metrics=['accuracy'])
+'''
 
 model.add(LSTM(32, return_sequences=True,
-               input_shape=(SEQUENCE_LENGTH, data_dim)))  # returns a sequence of vectors of dimension 32
+               input_shape=(sequence_length, data_dim)))  # returns a sequence of vectors of dimension 32
 model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
 model.add(LSTM(32))  # return a single vector of dimension 32
-model.add(Dense(3, activation='sigmoid'))
+model.add(Dense(2, activation='sigmoid'))
 model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, decay=1e-6), metrics=['accuracy'])
 
 
-model.fit(x_train, y_train, batch_size=500, epochs=epoch, validation_data=(x_val, y_val))
+model.fit(x_train, y_train, batch_size=batch_size, epochs=epoch, validation_data=(x_val, y_val))
 print(x_train[0].shape)
