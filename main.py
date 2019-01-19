@@ -16,8 +16,8 @@ from keras.optimizers import Adam
 sequence_length = 60
 data_dim = 9
 predict_length = 3
-epoch = 10
-batch_size = 64
+epoch = 5
+batch_size = 500
 
 
 def classify(current, future):
@@ -93,6 +93,4 @@ model.add(Dropout(0.5))
 model.add(Dense(4, activation='relu'))
 model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, decay=1e-6), metrics=['accuracy'])
 
-print(model.input_shape)
-print(x_train.shape)
-model.fit(x_train, y_train, batch_size=500, epochs=epoch, validation_data=(x_val, y_val))
+model.fit(x_train, y_train, batch_size=batch_size, epochs=epoch, validation_data=(x_val, y_val))
