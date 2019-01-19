@@ -113,4 +113,4 @@ model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, de
 
 
 model.fit(x_train, y_train, batch_size=batch_size, epochs=epoch, validation_data=(x_val, y_val))
-print(x_train[0].shape)
+
