@@ -80,14 +80,14 @@ x_train, y_train = preprocess(data)
 x_val, y_val = preprocess(validation)
 
 model = Sequential()
-model.add(LSTM(32, return_sequences=True,
-              input_shape=(sequence_length, data_dim), activation='relu')) # returns a sequence of vectors of dimension 32
+model.add(LSTM(32, return_sequences= True,
+              input_shape=(sequence_length, data_dim), activation='relu'))
 model.add(Dropout(0.5))
 
-model.add(LSTM(32, return_sequences=True, activation='relu'))  # returns a sequence of vectors of dimension 32
+model.add(LSTM(32, return_sequences=True, activation='relu'))
 model.add(Dropout(0.5))
 
-model.add(LSTM(32, activation='tanh'))  # return a single vector of dimension 32
+model.add(LSTM(32, activation='tanh'))
 model.add(Dropout(0.5))
 
 model.add(Dense(4, activation='relu'))
