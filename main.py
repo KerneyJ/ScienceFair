@@ -80,17 +80,19 @@ x_train, y_train = preprocess(data)
 x_val, y_val = preprocess(validation)
 
 model = Sequential()
-model.add(LSTM(32, return_sequences= True,
-              input_shape=(sequence_length, data_dim), activation='relu'))
-model.add(Dropout(0.5))
 
-model.add(LSTM(32, return_sequences=True, activation='relu'))
-model.add(Dropout(0.5))
+model.add(LSTM(32, return_sequences=True, activation='tanh',
+               input_shape=(sequence_length, data_dim)))
+model.add(LSTM(32, return_sequences=True, activation='tanh'))
+model.add(Dropout(0.2))
 
-model.add(LSTM(32, activation='tanh'))
-model.add(Dropout(0.5))
+model.add(LSTM(32, return_sequences=True, activation='tanh'))
+model.add((LSTM(32, activation='tanh')))
+model.add(Dropout(0.2))
 
 model.add(Dense(4, activation='relu'))
 model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, decay=1e-6), metrics=['accuracy'])
+# Adam(lr=0.01, decay=1e-6)
+# Nadam(lr=0.01)
 
 model.fit(x_train, y_train, batch_size=batch_size, epochs=epoch, validation_data=(x_val, y_val))
