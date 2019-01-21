@@ -25,7 +25,7 @@ data = data[(data.index >= 3303136)]
 
 def classify(current, future):
     diff = float(future) - float(current)
-    return abs(diff)
+    return abs(diff) / 248
 
 
 def preprocess(df):
@@ -84,9 +84,9 @@ model.add((LSTM(32, activation='tanh')))
 model.add(Dropout(0.2))
 
 model.add(Dense(32, activation='relu'))
-model.add(Dense(128, activation='relu'))
-model.add(Dense(248, activation='relu'))
-model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, decay=1e-6), metrics=['accuracy'])
+model.add(Dense(32, activation='relu'))
+model.add(Dense(1, activation='relu'))
+model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.1, decay=1e-6), metrics=['accuracy'])
 # Adam(lr=0.01, decay=1e-6)
 # Nadam(lr=0.01)
 
