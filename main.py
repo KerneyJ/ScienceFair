@@ -54,7 +54,7 @@ def preprocess(df):
 
     for seq, target in seq_data:
         x.append(seq)
-        y.append(abs(target))
+        y.append(target)
 
     # print(len(x), len(y))
     return np.array(x), y
