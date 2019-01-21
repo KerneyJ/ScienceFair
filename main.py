@@ -19,18 +19,13 @@ predict_length = 3
 epoch = 5
 batch_size = 500
 
+data = pd.read_csv('D:\\Data\\bitstampUSD_1-min_data_2012-01-01_to_2018-11-11.csv', engine='python')  # get data
+data = data[data.Weighted_Price >= 0]  # remove nan
+data = data[(data.index >= 3303136)]
 
 def classify(current, future):
     diff = float(future) - float(current)
-    if -5 <= diff < 0:
-        return 0
-    elif -10 <= diff < -5:
-        return 1
-
-    elif 0 < diff <= 5:
-        return 2
-    elif 5 < diff <= 10:
-        return 3
+    return abs(diff)
 
 
 def preprocess(df):
@@ -65,11 +60,9 @@ def preprocess(df):
     return np.array(x), y
 
 
-data = pd.read_csv('D:\\Data\\bitstampUSD_1-min_data_2012-01-01_to_2018-11-11.csv', engine='python')  # get data
-data = data[data.Weighted_Price >= 0]  # remove nan
-data = data[(data.index >= 3303136)]
 data['Future'] = data['Weighted_Price'].shift(-predict_length)
 data['Target'] = list(map(classify, data['Close'], data['Future']))
+
 data.index = range(len(data))  # re-index the dataframe
 
 last_five = data.index.values[-int(0.1*len(data))]  # get a time index for the last 5 percent of data
@@ -90,7 +83,9 @@ model.add(LSTM(32, return_sequences=True, activation='tanh'))
 model.add((LSTM(32, activation='tanh')))
 model.add(Dropout(0.2))
 
-model.add(Dense(4, activation='relu'))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(248, activation='relu'))
 model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, decay=1e-6), metrics=['accuracy'])
 # Adam(lr=0.01, decay=1e-6)
 # Nadam(lr=0.01)
