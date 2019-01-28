@@ -4,14 +4,11 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"]="3"
 import pandas as pd
 from sklearn import preprocessing
 from collections import deque
-import matplotlib.pyplot as plt
 import numpy as np
 import random
-import time
 
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, LSTM, BatchNormalization, Activation
-from keras.callbacks import  TensorBoard, ModelCheckpoint
+from keras.layers import Dense, Dropout, LSTM
 from keras.optimizers import Adam
 
 sequence_length = 60
@@ -26,6 +23,7 @@ def classify(current, future):
         return 1
     else:
         return 0
+
 
 def preprocess(df):
     for col in df.columns:
@@ -90,27 +88,22 @@ x_train, y_train = preprocess(data)
 x_val, y_val = preprocess(validation)
 
 model = Sequential()
-''''
-model.add(LSTM(32, return_sequences=True,
-              input_shape=(sequence_length, data_dim), activation='tanh')) # returns a sequence of vectors of dimension 32
-model.add(Dropout(0.4))
-
-model.add(LSTM(32, return_sequences=True, activation='tanh'))  # returns a sequence of vectors of dimension 32
-model.add(Dropout(0.2))
-
-model.add(LSTM(32, activation='relu'))  # return a single vector of dimension 32
-
-model.add(Dense(1, activation='relu'))
-model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, decay=1e-6), metrics=['accuracy'])
-'''
 
 model.add(LSTM(32, return_sequences=True,
-               input_shape=(sequence_length, data_dim)))  # returns a sequence of vectors of dimension 32
-model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
-model.add(LSTM(32))  # return a single vector of dimension 32
+               input_shape=(sequence_length, data_dim)))
+model.add(Dropout(0.5))
+
+model.add(LSTM(32, return_sequences=True))
+model.add(Dropout(0.5))
+
+model.add(LSTM(32, return_sequences=True))
+model.add(Dropout(0.5))
+
+model.add(LSTM(32))
+
 model.add(Dense(2, activation='sigmoid'))
 model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.01, decay=1e-6), metrics=['accuracy'])
 
 
 model.fit(x_train, y_train, batch_size=batch_size, epochs=epoch, validation_data=(x_val, y_val))
-
+model.save('model.h5')
