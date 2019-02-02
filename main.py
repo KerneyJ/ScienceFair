@@ -12,7 +12,7 @@ from keras.layers import Dense, Dropout, LSTM
 from keras.optimizers import Adam
 
 sequence_length = 60
-data_dim = 9
+data_dim = 8
 predict_length = 3
 epoch = 5
 batch_size = 500
@@ -73,16 +73,20 @@ def preprocess(df):
     return np.array(x), y
 
 
-data = pd.read_csv('D:\\Data\\bitstampUSD_1-min_data_2012-01-01_to_2018-11-11.csv', engine='python')  # get data
+data = pd.read_csv('D:\\Data\\crypto_data\\bitstampUSD_1-min_data_2012-01-01_to_2018-11-11.csv', engine='python') # load data
 data = data[data.Weighted_Price >= 0]  # remove nan
 data = data[(data.index >= 3403136)]
 data['Future'] = data['Weighted_Price'].shift(-predict_length)
 data['Target'] = list(map(classify, data['Close'], data['Future']))
 data.index = range(len(data))  # re-index the dataframe
-
+data = data.drop(columns='Timestamp') # drop the Tiemstamp column
 last_five = data.index.values[-int(0.05*len(data))]  # get a time index for the last 5 percent of data
 validation = data[(data.index >= last_five)]  # create validation as last 5 percent of data
 data = data[(data.index <= last_five)]  # remove validation from the normal dataframe
+for i in data.columns:
+    print(i)
+
+input()
 
 x_train, y_train = preprocess(data)
 x_val, y_val = preprocess(validation)
